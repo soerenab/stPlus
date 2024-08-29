@@ -44,7 +44,8 @@ class VAE(nn.Module):
 
 def stPlus(spatial_df, scrna_df, genes_to_predict, save_path_prefix='./stPlus',
           top_k=2000, t_min=5, data_quality=None, random_seed=None, verbose=True, n_neighbors=50,
-           converge_ratio=0.004, max_epoch_num=10000, batch_size=512, learning_rate=None, weight_decay=0.0002):
+           converge_ratio=0.004, max_epoch_num=10000, batch_size=512, learning_rate=None, weight_decay=0.0002,
+           generator=torch.Generator(device='cuda')):
     """
     spatial_df:       [pandas dataframe] normalized and logarithmized original spatial data (cell by gene)
     scrna_df:         [pandas dataframe] normalized and logarithmized reference scRNA-seq data (cell by gene)
@@ -120,8 +121,8 @@ def stPlus(spatial_df, scrna_df, genes_to_predict, save_path_prefix='./stPlus',
     optimizer = torch.optim.Adam(net.parameters(), lr = learning_rate, weight_decay=weight_decay)
 
     train_set = TensorsDataset(train_dat,train_lab)
-    train_loader = DataLoader(dataset=train_set, batch_size=batch_size, shuffle=True, num_workers=4)
-    val_loader = DataLoader(dataset=train_set, batch_size=batch_size, shuffle=False, num_workers=4)
+    train_loader = DataLoader(dataset=train_set, batch_size=batch_size, shuffle=True, num_workers=4, generator=generator)
+    val_loader = DataLoader(dataset=train_set, batch_size=batch_size, shuffle=False, num_workers=4, generator=generator)
     if data_quality is None:
         data_quality = 1 - np.sum(np.sum(scrna_df==0)) / (scrna_df.shape[0]*scrna_df.shape[1])
         
